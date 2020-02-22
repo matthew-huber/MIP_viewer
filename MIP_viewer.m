@@ -26,6 +26,7 @@ data_in = reshape(read_data,frame_size, frame_size, num_slices);
 data_out = zeros(128,num_slices,num_angles);
 max_locs = zeros(128,num_slices,num_angles);
 
+
 %%
 
 for slice_ix = 1:num_slices
@@ -51,5 +52,30 @@ for i = 1:num_angles
     colormap gray
     pause(0.1)
 end
+
+
+%% Load CT Data
+
+CT_data = 'phantomct.sh'
+[fID, err] = fopen(CT_data);
+
+read_data_CT = fread(fID, 'float32');
+fclose(fID);
+
+%% Reshape data and create matrices for output
+
+frame_size_CT = 512;
+num_slices_CT = length(read_data_CT)/frame_size_CT^2;
+% WHY IS NUM SLICES CT NOT AN INTEGER????!???!?!!?
+
+CT_data = reshape(read_data_CT,frame_size_CT, frame_size_CT, num_slices_CT);
+
+%downsample CT 
+CT_data = CT_data(1:4:frame_size_CT,1:4:frame_size_CT,:);
+
+% hold body start position here, compare with max_locs to find distance for
+% attenuation
+body_start = zeros(128,num_slices,num_angles);
+
 
 
