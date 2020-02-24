@@ -59,19 +59,44 @@ end
 CT_data = 'phantomct.sh'
 [fID, err] = fopen(CT_data);
 
-read_data_CT = fread(fID, 'float32');
+read_data_CT = fread(fID, 'int16');
 fclose(fID);
 
 %% Reshape data and create matrices for output
+frame_size=512;
+CT_data = reshape(read_data_CT, frame_size, frame_size, []);
 
-frame_size_CT = 512;
-num_slices_CT = length(read_data_CT)/frame_size_CT^2;
-% WHY IS NUM SLICES CT NOT AN INTEGER????!???!?!!?
+%downsample CT
+CT_data = CT_data(1:4:frame_size, 1:4:frame_size, :);
+CT_data = double(CT_data); % for the filtering
 
-CT_data = reshape(read_data_CT,frame_size_CT, frame_size_CT, num_slices_CT);
+%minimum filter to remove bed artifacts
+%fun = @(x) min(x(:));
+for i = 1:size(CT_data, 3)
+    CT_data_filt(:, :, i) = colfilt(CT_data(:, :, i), [6,6],'sliding', @min);
+        CT_data_filt(:, :, i) = colfilt(CT_data_filt(:, :, i), [2,2],'sliding', @mean);
 
-%downsample CT 
-CT_data = CT_data(1:4:frame_size_CT,1:4:frame_size_CT,:);
+end
+
+
+%% Visualize
+for i = 1:size(CT_data, 3)
+    subplot(131)
+    imagesc(CT_data(:, :, i))
+    colorbar
+    caxis([-1200 0])
+    
+    subplot(132)
+    imagesc(CT_data_orig(:, :, i));
+    colorbar
+    caxis([-1200 0])
+    
+    subplot(133)
+    imagesc(data_in(:, :,i))
+    
+        colorbar
+    pause(0.2)
+end
 
 % hold body start position here, compare with max_locs to find distance for
 % attenuation
