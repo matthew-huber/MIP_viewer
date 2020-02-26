@@ -10,7 +10,7 @@ valid_file = 0;
 
 while valid_file == 0
     data = input('Please enter the name of the PET data file for evaluation:\n','s');
-    
+
     if strcmp(data,'exit')
         disp('Exiting Program')
         exit;
@@ -54,6 +54,8 @@ if strcmp(depth_weighting,'Y')
     end
     d = str2num(d);
 end
+
+file_out = input('Please enter the name of the file to output data to\n','s');
 
 %% Reshape data and create matrices for output
 
@@ -170,7 +172,6 @@ end
 
 %% Output matrix 
 
-file_out = input('Please enter the name of the file to output data to\n','s');
 if strcmp(file_out,'exit')
     disp('Exiting Program')
     exit;
@@ -206,51 +207,5 @@ for i = 1:num_angles
 end
 
 data_out = data_out(:);
-
-%% Load CT Data
-
-CT_data = 'phantomct.sh'
-[fID, err] = fopen(CT_data);
-
-read_data_CT = fread(fID, 'int16');
-fclose(fID);
-
-%% Reshape data and create matrices for output
-frame_size=512;
-CT_data = reshape(read_data_CT, frame_size, frame_size, []);
-
-%downsample CT
-CT_data = CT_data(1:4:frame_size, 1:4:frame_size, :);
-CT_data = double(CT_data); % for the filtering
-
-%minimum filter to remove bed artifacts
-%fun = @(x) min(x(:));
-for i = 1:size(CT_data, 3)
-    CT_data_filt(:, :, i) = colfilt(CT_data(:, :, i), [6,6],'sliding', @min);
-        CT_data_filt(:, :, i) = colfilt(CT_data_filt(:, :, i), [2,2],'sliding', @mean);
-
-end
-
-
-%% Visualize
-for i = 1:size(CT_data, 3)
-    subplot(131)
-    imagesc(CT_data(:, :, i))
-    colorbar
-    caxis([-1200 0])
-    
-    subplot(132)
-    imagesc(CT_data_orig(:, :, i));
-    colorbar
-    caxis([-1200 0])
-    
-    subplot(133)
-    imagesc(data_in(:, :,i))
-    
-        colorbar
-    pause(0.2)
-end
-
-
 
 
