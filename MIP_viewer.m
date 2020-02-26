@@ -2,12 +2,18 @@ clear all
 
 %% NEED USER INPUTS
 
-num_angles = 50;
-depth_weighting = 0;
+disp('----------------------------------');
+disp('Welcome to the MIP program!')
+disp('Enter "exit" at any of the following prompts to quit the program\n')
+
+data = input('Please enter the name of the PET data file for evaluation:\n','s')
+num_angles = input('Please enter the number of angles to rotate:\n','s');
+num_angles = str2num(num_angles);
+depth_weighting = input('Please enter whether you would like depth weighting (Y/n):\n','s');
 
 %% Load Data
 
-data = 'phantompet15sec.fl'
+%data = 'phantompet15sec.fl'
 [fID, err] = fopen(data);
 
 read_data = fread(fID, 'float32');
@@ -53,29 +59,32 @@ for i = 1:num_angles
     pause(0.1)
 end
 
+if depth_weighting == 'Y'
 
-%% Load CT Data
+    %% Load CT Data
 
-CT_data = 'phantomct.sh'
-[fID, err] = fopen(CT_data);
+    CT_data = 'phantomct.sh'
+    [fID, err] = fopen(CT_data);
 
-read_data_CT = fread(fID, 'float32');
-fclose(fID);
+    read_data_CT = fread(fID, 'float32');
+    fclose(fID);
 
-%% Reshape data and create matrices for output
+    %% Reshape data and create matrices for output
 
-frame_size_CT = 512;
-num_slices_CT = length(read_data_CT)/frame_size_CT^2;
-% WHY IS NUM SLICES CT NOT AN INTEGER????!???!?!!?
+    frame_size_CT = 512;
+    num_slices_CT = length(read_data_CT)/frame_size_CT^2;
+    % WHY IS NUM SLICES CT NOT AN INTEGER????!???!?!!?
 
-CT_data = reshape(read_data_CT,frame_size_CT, frame_size_CT, num_slices_CT);
+    CT_data = reshape(read_data_CT,frame_size_CT, frame_size_CT, num_slices_CT);
 
-%downsample CT 
-CT_data = CT_data(1:4:frame_size_CT,1:4:frame_size_CT,:);
+    %downsample CT 
+    CT_data = CT_data(1:4:frame_size_CT,1:4:frame_size_CT,:);
 
-% hold body start position here, compare with max_locs to find distance for
-% attenuation
-body_start = zeros(128,num_slices,num_angles);
+    % hold body start position here, compare with max_locs to find distance for
+    % attenuation
+    body_start = zeros(128,num_slices,num_angles);
+    
+end
 
 
 
