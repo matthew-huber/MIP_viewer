@@ -4,12 +4,48 @@ clear all
 
 disp('----------------------------------');
 disp('Welcome to the MIP program!')
-disp('Enter "exit" at any of the following prompts to quit the program\n')
+disp('Enter "exit" at any of the following prompts to quit the program')
 
-data = input('Please enter the name of the PET data file for evaluation:\n','s')
+valid_file = 0;
+
+while valid_file == 0
+    data = input('Please enter the name of the PET data file for evaluation:\n','s');
+    
+    if strcmp(data,'exit')
+        disp('Exiting Program')
+        exit;
+    else
+        [fID, err] = fopen(data);
+        
+        if ~strcmp(err,'')
+            disp('Error opening file. Please Try again')
+        else
+            disp('Successfully opened file!')
+            disp('')
+            read_data = fread(fID, 'float32');
+            fclose(fID);
+            valid_file = 1;
+        end
+    end
+
+end
+if strcmp(data,'exit')
+    disp('Exiting Program')
+    exit;
+end
+
 num_angles = input('Please enter the number of angles to rotate:\n','s');
+if strcmp(num_angles,'exit')
+    disp('Exiting Program')
+    exit;
+end
 num_angles = str2num(num_angles);
+
 depth_weighting = input('Please enter whether you would like depth weighting (Y/n):\n','s');
+if strcmp(depth_weighting,'exit')
+    disp('Exiting Program')
+    exit;
+end
 
 %% Load Data
 
@@ -85,6 +121,23 @@ if depth_weighting == 'Y'
     body_start = zeros(128,num_slices,num_angles);
     
 end
+
+
+%% Output matrix 
+
+file_out = input('Please enter the name of the file to output data to\n','s');
+if strcmp(depth_weighting,'exit')
+    disp('Exiting Program')
+    exit;
+end
+
+data_out = data_out(:);
+
+fileID = fopen(file_out, 'w');
+frwite(fileID, data_out, 'float32');
+fclose(fileID);
+
+
 
 
 
