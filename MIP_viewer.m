@@ -157,7 +157,7 @@ else
 
             dist_to_max = I - body_start_inx;
             dist_to_max(dist_to_max<0)=0;
-            attenuation = dist_to_max .*exp(-d);
+            attenuation = exp(-dist_to_max .*d);
             M_attenuated = M .* attenuation;
             data_out(:,slice_ix,angle_ix) = M_attenuated;
             max_locs_attn2(:,slice_ix,angle_ix) = I;
@@ -182,11 +182,16 @@ file_out = file_out{1};
 % Visualize Rotation as a gif
 time_per_angle = 5/num_angles; % make complete rotation take 5 seconds
 
+sorted_data_out = sort(data_out(:));
+data_ix = round(0.95*length(sorted_data_out));
+
 h = figure;
 axis tight manual
 filename = [file_out '.gif'];
 for i = 1:num_angles
     imagesc(squeeze(data_out(:,:,i)))
+    caxis([0 sorted_data_out(data_ix)])
+    colormap gray
     
     frame = getframe(h); 
     im = frame2im(frame); 
@@ -197,12 +202,12 @@ for i = 1:num_angles
     else 
       imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',time_per_angle); 
     end 
-    
+        
 end
 
 data_out = data_out(:);
 
-fileID = fopen(file_out, 'w');
+fileID = fopen([file_out '.bin'], 'w');
 fwrite(fileID, data_out, 'float32');
 fclose(fileID);
 
