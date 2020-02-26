@@ -1,6 +1,6 @@
 clear all
 
-%% NEED USER INPUTS
+%% Request User Inputs
 
 disp('----------------------------------');
 disp('Welcome to the MIP program!')
@@ -49,7 +49,6 @@ end
 
 %% Load Data
 
-%data = 'phantompet15sec.fl'
 [fID, err] = fopen(data);
 
 read_data = fread(fID, 'float32');
@@ -68,8 +67,9 @@ data_in = reshape(read_data,frame_size, frame_size, num_slices);
 data_out = zeros(128,num_slices,num_angles);
 max_locs = zeros(128,num_slices,num_angles);
 
+%% Create MIP for different angles
 
-%%
+disp('Generating maximum intensity projection')
 
 for slice_ix = 1:num_slices
     for angle_ix = 1:num_angles
@@ -84,15 +84,6 @@ for slice_ix = 1:num_slices
         data_out(:,slice_ix,angle_ix) = M;
         max_locs(:,slice_ix,angle_ix) = I;
      end
-    disp(slice_ix)
-end
-
-%% Visualize Rotation
-
-for i = 1:num_angles
-    imagesc(squeeze(data_out(:,:,i)))
-    colormap gray
-    pause(0.1)
 end
 
 if depth_weighting == 'Y'
@@ -126,15 +117,40 @@ end
 %% Output matrix 
 
 file_out = input('Please enter the name of the file to output data to\n','s');
-if strcmp(depth_weighting,'exit')
+if strcmp(file_out,'exit')
     disp('Exiting Program')
     exit;
+end
+
+file_out = split(file_out,'.');
+file_out = file_out{1};
+
+% Visualize Rotation as a gif
+time_per_angle = 5/num_angles; % make complete rotation take 5 seconds
+
+h = figure;
+axis tight manual
+filename = [file_out '.gif'];
+for i = 1:num_angles
+    imagesc(squeeze(data_out(:,:,i)))
+    colormap gray
+    
+    frame = getframe(h); 
+    im = frame2im(frame); 
+    [imind,cm] = rgb2ind(im,256); 
+    % Write to the GIF File 
+    if i == 1 
+      imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',time_per_angle); 
+    else 
+      imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',time_per_angle); 
+    end 
+    
 end
 
 data_out = data_out(:);
 
 fileID = fopen(file_out, 'w');
-frwite(fileID, data_out, 'float32');
+fwrite(fileID, data_out, 'float32');
 fclose(fileID);
 
 
