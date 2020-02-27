@@ -209,3 +209,6 @@ end
 data_out = data_out(:);
 
 
+fileID = fopen([file_out '.bin'], 'w');
+fwrite(fileID, data_out, 'float32');
+fclose(fileID);
